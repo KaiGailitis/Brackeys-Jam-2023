@@ -8,9 +8,11 @@ public class PlayerController : MonoBehaviour
     [Header("Components")]
     [SerializeField] private Rigidbody2D rigidBody;
     [SerializeField] private TrailRenderer trailRenderer;
+    
     [Header("GroundCheck")]
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
+    
     [Header("WallCheck")]
     [SerializeField] private Transform wallCheck;
     [SerializeField] private LayerMask wallLayer;
@@ -21,15 +23,16 @@ public class PlayerController : MonoBehaviour
     private bool _isFacingRight;
     private float _facingDirection;
 
-    private bool _isWallSliding = false;
-    private float _wallSlidingSpeed = 1.0f;
+    [Header("Wallslide")]
+    [SerializeField] private bool _isWallSliding = false;
+    [SerializeField] private float _wallSlidingSpeed = 1.0f;
 
     [Header("Dash")]
-    private bool _canDash = true;
-    private bool _isDashing;
-    private float _dashingPower = 15.0f;
-    private float _dashingTime = 0.2f;
-    private float _dashingCooldown = 3.0f;
+    [SerializeField] private bool _canDash = true;
+    [SerializeField] private bool _isDashing;
+    [SerializeField] private float _dashingPower = 15.0f;
+    [SerializeField] private float _dashingTime = 0.2f;
+    [SerializeField] private float _dashingCooldown = 1.0f;
 
     [Header("Gravity")]
     private float _gravityScale = 2.0f;
@@ -52,11 +55,6 @@ public class PlayerController : MonoBehaviour
     private float _wallJumpingCounter;
     private float _wallJumpingDuration = 0.4f;
     private Vector2 _wallJumpingPower = new Vector2(2f, 10f);
-
-    void Start()
-    {
-        
-    }
 
     void Update()
     {
@@ -153,12 +151,14 @@ public class PlayerController : MonoBehaviour
         else
         {
             _isWallSliding = false;
+            Debug.Log("Wallslide Dash True");
         }
     }
 
     private IEnumerator WallJumpCooldown()
     {
         yield return new WaitForSeconds(0.1f);
+        Debug.Log("Walljump Cooldown True");
         _canDash = true;
         _jumpBufferCounter = 0;
     }
@@ -167,7 +167,6 @@ public class PlayerController : MonoBehaviour
     {
         if (_isWallSliding)
         {
-            _canDash = false;
             _isWallJumping = false;
             _wallJumpingDirection = -transform.localScale.x;
             _wallJumpingCounter = _wallJumpingTime;
@@ -185,7 +184,6 @@ public class PlayerController : MonoBehaviour
             rigidBody.AddForce(new Vector2(_wallJumpingDirection * _wallJumpingPower.x, _wallJumpingPower.y), ForceMode2D.Impulse);
             _wallJumpingCounter = 0f;
             _jumpBufferCounter = 0f;
-            _canDash = false;
             StartCoroutine(WallJumpCooldown());
 
             if (transform.localScale.x == _wallJumpingDirection)
@@ -204,6 +202,7 @@ public class PlayerController : MonoBehaviour
     private void StopWallJumping()
     {
         _isWallJumping = false;
+        _canDash = true;
     }
 
     private void Flip()
@@ -246,25 +245,8 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator Dash()
     {
-        if (_isWallJumping || _isWallSliding && _canDash && !_isDashing)
+        if (_canDash && !_isDashing && !IsWalled())
         {
-            Debug.Log("WallDash");
-            _canDash = false;
-            _isDashing = true;
-            float originalGravity = rigidBody.gravityScale;
-            rigidBody.gravityScale = 0.0f;
-            rigidBody.velocity = new Vector2(_facingDirection * -_dashingPower, 0f);
-            trailRenderer.emitting = true;
-            yield return new WaitForSeconds(_dashingTime);
-            trailRenderer.emitting = false;
-            rigidBody.gravityScale = originalGravity;
-            _isDashing = false;
-            yield return new WaitForSeconds(_dashingCooldown);
-            _canDash = true;
-        }
-        else if (_canDash && !_isDashing)
-        {
-            Debug.Log("Dash");
             _canDash = false;
             _isDashing = true;
             float originalGravity = rigidBody.gravityScale;

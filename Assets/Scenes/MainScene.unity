@@ -2667,6 +2667,11 @@ MonoBehaviour:
   wallLayer:
     serializedVersion: 2
     m_Bits: 128
+  _canDash: 1
+  _isDashing: 0
+  _dashingPower: 15
+  _dashingTime: 0.2
+  _dashingCooldown: 1
   _coyoteTime: 0.1
   _coyoteTimeCounter: 0
   _jumpBufferTime: 0.15
