@@ -158,7 +158,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator WallJumpCooldown()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
         _canDash = true;
         _jumpBufferCounter = 0;
     }
@@ -167,6 +167,7 @@ public class PlayerController : MonoBehaviour
     {
         if (_isWallSliding)
         {
+            _canDash = false;
             _isWallJumping = false;
             _wallJumpingDirection = -transform.localScale.x;
             _wallJumpingCounter = _wallJumpingTime;
@@ -181,15 +182,14 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump") && _wallJumpingCounter > 0f && _jumpBufferCounter < 0.15f)
         {
             _isWallJumping = true;
-            rigidBody.velocity = new Vector2(_wallJumpingDirection * _wallJumpingPower.x, _wallJumpingPower.y);
+            rigidBody.AddForce(new Vector2(_wallJumpingDirection * _wallJumpingPower.x, _wallJumpingPower.y), ForceMode2D.Impulse);
             _wallJumpingCounter = 0f;
             _jumpBufferCounter = 0f;
             _canDash = false;
             StartCoroutine(WallJumpCooldown());
 
-            if (transform.localScale.x != _wallJumpingDirection)
+            if (transform.localScale.x == _wallJumpingDirection)
             {
-                _isFacingRight = !_isFacingRight;
                 Vector3 localScale = transform.localScale;
                 localScale.x *= -1f;
                 transform.localScale = localScale;
@@ -264,19 +264,19 @@ public class PlayerController : MonoBehaviour
         }
         else if (_canDash && !_isDashing)
         {
-        Debug.Log("Dash");
-        _canDash = false;
-        _isDashing = true;
-        float originalGravity = rigidBody.gravityScale;
-        rigidBody.gravityScale = 0.0f;
-        rigidBody.velocity = new Vector2(_facingDirection * _dashingPower, 0f);
-        trailRenderer.emitting= true;
-        yield return new WaitForSeconds(_dashingTime);
-        trailRenderer.emitting = false;
-        rigidBody.gravityScale = originalGravity;
-        _isDashing = false;
-        yield return new WaitForSeconds(_dashingCooldown);
-        _canDash= true;
+            Debug.Log("Dash");
+            _canDash = false;
+            _isDashing = true;
+            float originalGravity = rigidBody.gravityScale;
+            rigidBody.gravityScale = 0.0f;
+            rigidBody.velocity = new Vector2(_facingDirection * _dashingPower, 0f);
+            trailRenderer.emitting= true;
+            yield return new WaitForSeconds(_dashingTime);
+            trailRenderer.emitting = false;
+            rigidBody.gravityScale = originalGravity;
+            _isDashing = false;
+            yield return new WaitForSeconds(_dashingCooldown);
+            _canDash= true;
         }
     }
 }
